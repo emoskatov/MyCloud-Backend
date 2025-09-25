@@ -9,6 +9,11 @@ from drf_spectacular.views import (
     SpectacularSwaggerView,
 )
 
+
+def health(request):
+    return JsonResponse({"status": "ok"})
+
+
 urlpatterns = [
     path(
         # Админка
@@ -29,6 +34,7 @@ urlpatterns = [
         SpectacularRedocView.as_view(url_name='schema'),
         name='redoc'
     ),
+    path("health/", health),
 ]
 
 # Static files
@@ -36,4 +42,4 @@ if settings.DEBUG:
     urlpatterns += static(
         settings.MEDIA_URL,
         document_root=settings.MEDIA_ROOT
-)
+    )
