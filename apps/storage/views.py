@@ -139,8 +139,6 @@ class FileDetailView(generics.RetrieveUpdateDestroyAPIView):
         )
 
     def perform_update(self, serializer):
-        """
-        """
         instance = serializer.save()
         instance.last_download = None
         instance.save()
@@ -201,7 +199,7 @@ class FileDownloadView(generics.GenericAPIView):
 
     def get_object(self, pk):
         """
-        Handle GET requests to download a file from a shared link.
+        Returns the UserFile object with the given primary key.
         """
         file = get_object_or_404(UserFile, pk=pk)
 
@@ -219,12 +217,7 @@ class SharedFileDownloadView(generics.GenericAPIView):
 
     def get(self, request, shared_link):
         """
-        Handle GET requests to download
-        a file from a shared link.
-
-        :param request: The GET request
-        :param shared_link: The shared link of the file to download
-        :return: A streaming HTTP response containing the file
+        Handle GET requests to download a file from a shared link.
         """
         try:
             user_file = get_object_or_404(
@@ -267,7 +260,6 @@ class FileShareView(generics.UpdateAPIView):
         """
         Оптимизированный запрос с select_related для пользователя
         """
-
         user = self.request.user
         return UserFile.objects.filter(user=user).select_related('user')
 
@@ -297,6 +289,7 @@ class FileShareView(generics.UpdateAPIView):
         """
         instance = self.get_object()
         user_id = instance.user.id
+
         instance.shared_link = None
         instance.shared_expiry = None
         instance.save()

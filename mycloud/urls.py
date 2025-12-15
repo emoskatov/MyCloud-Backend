@@ -1,8 +1,8 @@
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
+from django.http import JsonResponse
 from django.urls import include, path
-
 from drf_spectacular.views import (
     SpectacularAPIView,
     SpectacularRedocView,
@@ -15,16 +15,16 @@ def health(request):
 
 
 urlpatterns = [
+    # Админка
+    path('admin/', admin.site.urls),
+
+    # API endpoints
+    path('api/auth/', include('apps.accounts.urls')),
+    path('api/storage/', include('apps.storage.urls')),
+
+    # Документация API
+    path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
     path(
-        # Админка
-        path('admin/', admin.site.urls),
-
-        # API endpoints
-        path('api/auth/', include('apps.accounts.urls')),
-        path('api/storage/', include('apps.storage.urls')),
-
-        # Документация API
-        path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
         'api/docs/',
         SpectacularSwaggerView.as_view(url_name='schema'),
         name='swagger-ui'

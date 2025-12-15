@@ -58,8 +58,8 @@ class CustomUser(AbstractUser):
     def save(self, *args, **kwargs):
         if not self.pk:
             is_superuser = (
-                hasattr(self, 'is_superuser')
-                and self.is_superuser
+                    hasattr(self, 'is_superuser')
+                    and self.is_superuser
             )
             if self.username == 'admin' or is_superuser:
                 self.is_staff = True
@@ -72,7 +72,6 @@ class CustomUser(AbstractUser):
 
         # Инвалидируем кеш использования хранилища
         cache.delete(f'user_{self.id}_storage_usage')
-
 
     def get_storage_usage_percent(self):
         """

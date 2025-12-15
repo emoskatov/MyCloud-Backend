@@ -1,4 +1,3 @@
-# apps\accounts\tests\test_models.py
 from django.core.cache import cache
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import connection
@@ -14,18 +13,18 @@ class CustomUserModelTest(TransactionTestCase):
     def setUp(self):
         cache.clear()
 
-    if connection.vendor == 'postgresql':
-        with connection.cursor() as cursor:
-            cursor.execute("TRUNCATE storage_userfile, accounts_customuser RESTART IDENTITY CASCADE;")
+        if connection.vendor == 'postgresql':
+            with connection.cursor() as cursor:
+                cursor.execute("TRUNCATE storage_userfile, accounts_customuser RESTART IDENTITY CASCADE;")
 
         # Create test user after clearing and resetting sequences
-    self.user = CustomUser.objects.create_user(
-        username='testuser',
-        email='test@example.com',
-        full_name='Test User',
-        password='testpass123',
-        max_storage=100 * 1024 * 1024
-    )
+        self.user = CustomUser.objects.create_user(
+            username='testuser',
+            email='test@example.com',
+            full_name='Test User',
+            password='testpass123',
+            max_storage=100 * 1024 * 1024
+        )
 
     def test_storage_usage_calculation(self):
         test_content = b'This is a test file content'

@@ -31,7 +31,6 @@ class FileAPITestCase(APITransactionTestCase):
             password='testpass123',
             max_storage=100 * 1024 * 1024
         )
-
         self.admin = CustomUser.objects.create_superuser(
             username='admin',
             email='admin@example.com',
@@ -56,13 +55,11 @@ class FileAPITestCase(APITransactionTestCase):
                 cursor.execute("ALTER SEQUENCE accounts_customuser_id_seq RESTART WITH 1;")
 
     def test_file_download(self):
-        # Создаем тестовый файл
         file = UserFile(
             user=self.user,
             file=self.test_file,
             size=self.test_file.size,
         )
-
         file.save()
 
         url = reverse('file-download', kwargs={'pk': file.pk})
@@ -72,7 +69,6 @@ class FileAPITestCase(APITransactionTestCase):
         self.assertIn(f'attachment; filename="{file.original_name}"', response['Content-Disposition'])
 
     def test_shared_file_download(self):
-        # Создаем тестовый файл с общей ссылкой
         shared_link = '12345678-1234-5678-1234-567812345678'
 
         file = UserFile(
@@ -81,7 +77,6 @@ class FileAPITestCase(APITransactionTestCase):
             size=self.test_file.size,
             shared_link=shared_link
         )
-
         file.save()
 
         self.client.logout()  # Разлогиниваемся, чтобы проверить доступ без авторизации
@@ -93,12 +88,10 @@ class FileAPITestCase(APITransactionTestCase):
         self.assertIn(f'attachment; filename="{file.original_name}"', response['Content-Disposition'])
 
     def test_storage_quota_enforcement(self):
-        # Исчерпываем квоту пользователя
         large_file = UserFile(
             user=self.user,
             size=self.user.max_storage,
         )
-
         large_file.save()
 
         url = reverse('file-list')
@@ -108,14 +101,13 @@ class FileAPITestCase(APITransactionTestCase):
         self.assertIn('exceeded the maximum storage limit', str(response.data).lower())
 
     def test_admin_access_to_user_files(self):
-        # Создаем тестовый файл от имени обычного пользователя
         file = UserFile(
             user=self.user,
             file=self.test_file,
             size=self.test_file.size,
         )
-
         file.save()
+
         self.client.force_authenticate(user=self.admin)
 
         url = reverse('file-download', kwargs={'pk': file.pk})

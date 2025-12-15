@@ -38,6 +38,7 @@ WSGI_APPLICATION = 'mycloud.wsgi.application'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = 'accounts.CustomUser'
 
+
 # ======================
 # 3. Installed Apps
 # ======================
@@ -150,7 +151,7 @@ CORS_ALLOWED_ORIGINS = env.list('CORS_ALLOWED_ORIGINS')
 CSRF_TRUSTED_ORIGINS = CORS_ALLOWED_ORIGINS
 CORS_ALLOW_ALL_ORIGINS = True
 
-CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_CREDENTIALS=True
 CORS_ALLOW_HEADERS = [
     'accept',
     'accept-encoding',
@@ -166,7 +167,7 @@ CORS_ALLOW_HEADERS = [
 SESSION_COOKIE_SAMESITE = 'Lax'
 CSRF_COOKIE_SAMESITE = 'Lax'
 SESSION_COOKIE_SECURE = False
-CSRF_COOKIE_SECURE = False
+CSRF_COOKIE_SECURE=False
 
 # ======================
 # 9. Internationalization
