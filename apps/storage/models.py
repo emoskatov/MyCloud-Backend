@@ -1,5 +1,6 @@
 import os
 import uuid
+from datetime import timedelta
 
 from django.db import models
 from django.utils import timezone
@@ -8,16 +9,6 @@ from apps.accounts.models import CustomUser
 
 
 def user_directory_path(instance, filename):
-    """
-    Create a directory path to store a user's files.
-    The directory name is of the form user_<user_id>_storage
-    and the file name is an uuid with the same extension as
-    the original file name.
-
-    :param instance: The UserFile instance to generate a path for
-    :param filename: The name of the file to be stored
-    :return: A string representing the path to store the file
-    """
     ext = os.path.splitext(filename)[1]
     filename = f"{uuid.uuid4()}{ext}"
     return os.path.join(
@@ -59,90 +50,33 @@ class UserFile(models.Model):
     )
 
     def save(self, *args, **kwargs):
-        """
-        Save the UserFile model to the database.
-
-        If the UserFile is created for the first time,
-        set the size and original_name fields from the
-        file, and then save the model again with only
-        the size and original_name fields updated.
-
-        :param args: Additional positional arguments
-        to pass to the save() method.
-        :param kwargs: Additional keyword arguments
-        to pass to the save() method.
-        :return: None
-        """
-        if self.file and not self.pk:
-            file = self.file
-            self.file = None
-
-            super().save(*args, **kwargs)
-
-            self.file = file
-            self.size = file.size
-            self.original_name = os.path.basename(file.name)
-
+        is_new = self.pk is None
+        if is_new:
+            self.original_name = os.path.basename(
+                self.file.name
+            )
+            self.size = self.file.size
+            if self.shared_expiry is None:
+                self.shared_expiry = timezone.now() + timedelta(days=7)
         super().save(*args, **kwargs)
 
     def delete(self, *args, **kwargs):
-        """
-        Delete the file from storage
-        and then delete the model instance.
-        """
-        try:
-            if self.file:
-                storage, path = self.file.storage, self.file.path
+        if self.file:
+            try:
+                storage = self.file.storage
+                path = self.file.path
                 storage.delete(path)
-        except Exception as e:
-            print(e)
-        finally:
-            super().delete(*args, **kwargs)
+            except Exception as e:
+                print(f"Error deleting file: {e}")
+        super().delete(*args, **kwargs)
 
     def is_shared_link_expired(self):
-        """
-        Check if the shared link has expired.
-        """
         if not self.shared_expiry:
             return False
         return timezone.now() > self.shared_expiry
 
     def __str__(self):
-        """
-        Return a string representation of the UserFile.
-
-        The string representation includes the username
-        of the user who uploaded the file and the original
-        name of the file.
-
-        :return: A string representation of the UserFile.
-        """
         return f"{self.user.username}: {self.original_name}"
-
-    def get_file_path(self):
-        """
-        Retrieve the file path of the associated file.
-
-        This method returns the path of the file stored
-        in the UserFile instance if the file exists. If
-        there is no file associated with the instance,
-        it returns None.
-
-        :return: The file path as a string, or None if
-        no file is associated with the instance.
-        """
-        if self.file:
-            return self.file.path
-        return None
-
-    @property
-    def file_exists(self):
-        """
-        Check if the file associated with this UserFile exists.
-
-        :return: True if the file exists, False otherwise.
-        """
-        return self.file and os.path.exists(self.file.path)
 
     class Meta:
         verbose_name = 'File'

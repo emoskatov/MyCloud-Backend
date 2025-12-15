@@ -1,3 +1,4 @@
+import uuid
 from datetime import timedelta
 
 from django.utils import timezone
@@ -49,14 +50,27 @@ class FileShareSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = UserFile
-        fields = ['shared_link', 'shared_expiry', 'expiry_days']
-        read_only_fields = ['shared_link', 'shared_expiry']
+        fields = [
+            'shared_link',
+            'shared_expiry',
+            'expiry_days'
+        ]
+        read_only_fields = [
+            'shared_link',
+            'shared_expiry'
+        ]
 
     def update(self, instance, validated_data):
         expiry_days = validated_data.pop('expiry_days', None)
 
-        if expiry_days:
+        if expiry_days is not None:
             instance.shared_expiry = timezone.now() + timedelta(days=expiry_days)
-            instance.save()
 
+        elif instance.shared_expiry is None or instance.is_shared_link_expired():
+            instance.shared_expiry = timezone.now() + timedelta(days=7)
+
+        if not instance.shared_link or instance.is_shared_link_expired():
+            instance.shared_link = uuid.uuid4()
+
+        instance.save()
         return instance

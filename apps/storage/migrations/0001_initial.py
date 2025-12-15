@@ -27,6 +27,7 @@ class Migration(migrations.Migration):
                 ('last_download', models.DateTimeField(blank=True, null=True)),
                 ('comment', models.TextField(blank=True)),
                 ('shared_link', models.UUIDField(default=uuid.uuid4, unique=True)),
+                ('shared_expiry', models.DateTimeField(blank=True, help_text='Link expiration date and time', null=True)),
                 ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
             ],
             options={
